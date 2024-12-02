@@ -132,3 +132,4 @@ dmypy.json
 .pyre/
 save/
 Classification_AD_CN_MCI_datasets/
+*.png
