@@ -134,3 +134,4 @@ save/
 Classification_AD_CN_MCI_datasets/
 *.png
 000*/*
+results/batchsize-8-lr-0.005-transform-aug/best_model.pth
