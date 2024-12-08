@@ -67,8 +67,8 @@ def validate(model, val_loader, criterion, device='cuda'):
 
 
 # Define hyperparameter grids
-batch_sizes = [8, 16, 32, 64, 128, 256]
-learning_rates = [0.005, 0.01, 0.05, 0.1]
+batch_sizes = [16, 32, 64]
+learning_rates = [0.01, 0.05]
 use_transform_options = [True, False]
 
 # Output directory
@@ -123,7 +123,7 @@ def run_experiment(batch_size, lr, use_transform):
 
     # Training parameters
     epochs = 200
-    patience = 20
+    patience = 5
     best_val_loss = float('inf')
     no_improvement = 0
     train_losses = []
@@ -160,7 +160,7 @@ def run_experiment(batch_size, lr, use_transform):
     plt.ylabel('Loss')
     plt.title(f"Loss curves ({run_name})")
     plt.legend()
-    plt.savefig(os.path.join(run_dir, f"loss-graph-{run_name}.png"))
+    plt.savefig(os.path.join(run_dir, f"loss-graph-{run_name}.pdf"))
     plt.close()
 
     # Load the best model for evaluation
@@ -192,7 +192,7 @@ def run_experiment(batch_size, lr, use_transform):
     plt.yticks(tick_marks, np.unique(all_targets))
     plt.xlabel('Predicted')
     plt.ylabel('True')
-    plt.savefig(os.path.join(run_dir, f"confusion-matrix-{run_name}.png"))
+    plt.savefig(os.path.join(run_dir, f"confusion-matrix-{run_name}.pdf"))
     plt.close()
 
     # Classification report
@@ -213,7 +213,7 @@ def run_experiment(batch_size, lr, use_transform):
         plt.imshow(img_np, cmap='gray')
         plt.title(f"True: {['Healthy', 'Disease', 'MCI'][lbl]}, Pred: {['Healthy', 'Disease', 'MCI'][pred_label]}")
         plt.colorbar()
-        plt.savefig(os.path.join(run_dir, f"sample-img-{idx}-{run_name}.png"))
+        plt.savefig(os.path.join(run_dir, f"sample-img-{idx}-{run_name}.pdf"))
         plt.close()
 
     # Save final metrics to a text file
