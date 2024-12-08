@@ -1,0 +1,1 @@
+results/batchsize-16-lr-0.01-transform-aug/best_model.pth filter=lfs diff=lfs merge=lfs -text

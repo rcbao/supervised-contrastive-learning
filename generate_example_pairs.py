@@ -1,3 +1,5 @@
+# generate_example_pairs.py
+
 import os
 import numpy as np
 import torch
@@ -10,6 +12,9 @@ import random
 
 # Directory to save example pairs
 os.makedirs("example_pairs", exist_ok=True)
+
+# Define label mapping
+label_map = {0: 'Healthy', 1: 'Disease', 2: 'MCI'}
 
 # Load your dataset (.npy files)
 train_images = np.load('Classification_AD_CN_MCI_datasets/brain_train_image_final.npy')
@@ -58,27 +63,33 @@ def save_pairs():
     # Positive Pair
     pos_label, pos_img1, pos_img2 = get_positive_pair()
     fig, axes = plt.subplots(1, 2, figsize=(10, 5))
+    
     axes[0].imshow(pos_img1, cmap='gray')
-    axes[0].set_title(f"Positive Pair - Label: {pos_label}")
+    axes[0].set_title(f"Positive Pair: {label_map[pos_label]}", fontsize=25)
     axes[0].axis('off')
+    
     axes[1].imshow(pos_img2, cmap='gray')
-    axes[1].set_title(f"Positive Pair - Label: {pos_label}")
+    axes[1].set_title(f"Positive Pair: {label_map[pos_label]}", fontsize=25)
     axes[1].axis('off')
+    
     plt.tight_layout()
-    plt.savefig(f"example_pairs/positive-pair-label-{pos_label}.png")
+    plt.savefig(f"example_pairs/positive-pair-label-{pos_label}.png", dpi=300)
     plt.close()
 
     # Negative Pair
     (neg_label1, neg_label2), neg_img1, neg_img2 = get_negative_pair()
     fig, axes = plt.subplots(1, 2, figsize=(10, 5))
+    
     axes[0].imshow(neg_img1, cmap='gray')
-    axes[0].set_title(f"Negative Pair - Label: {neg_label1}")
+    axes[0].set_title(f"Negative Pair: {label_map[neg_label1]}", fontsize=25)
     axes[0].axis('off')
+    
     axes[1].imshow(neg_img2, cmap='gray')
-    axes[1].set_title(f"Negative Pair - Label: {neg_label2}")
+    axes[1].set_title(f"Negative Pair: {label_map[neg_label2]}", fontsize=25)
     axes[1].axis('off')
+    
     plt.tight_layout()
-    plt.savefig(f"example_pairs/negative-pair-labels-{neg_label1}-{neg_label2}.png")
+    plt.savefig(f"example_pairs/negative-pair-labels-{neg_label1}-{neg_label2}.png", dpi=300)
     plt.close()
 
     print("Saved positive and negative pairs to the 'example_pairs/' directory.")
