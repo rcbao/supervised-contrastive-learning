@@ -133,7 +133,8 @@ def resnet34(**kwargs):
 
 
 def resnet50(**kwargs):
-    return ResNet(Bottleneck, [3, 4, 6, 3], **kwargs)
+    # Change in_channel to 1 for single-channel input
+    return ResNet(Bottleneck, [3, 4, 6, 3], in_channel=1, **kwargs)
 
 
 def resnet101(**kwargs):

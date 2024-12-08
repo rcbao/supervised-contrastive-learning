@@ -97,6 +97,8 @@ def parse_option():
     else:
         raise ValueError('dataset not supported: {}'.format(opt.dataset))
 
+    opt.n_cls = 3
+    
     return opt
 
 

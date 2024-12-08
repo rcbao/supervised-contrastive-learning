@@ -15,6 +15,7 @@ from util import AverageMeter
 from util import adjust_learning_rate, warmup_learning_rate, accuracy
 from util import set_optimizer, save_model
 from networks.resnet_big import SupCEResNet
+from PIL import Image
 
 try:
     import apex
@@ -22,6 +23,43 @@ try:
 except ImportError:
     pass
 
+from torch.utils.data import Dataset
+import numpy as np
+
+
+data_dir = "Classification_AD_CN_MCI_datasets"
+
+final_X_train = np.load(f'{data_dir}/brain_train_image_final.npy')
+final_y_train = np.load(f'{data_dir}/brain_train_label.npy')
+final_X_test = np.load(f'{data_dir}/brain_test_image_final.npy')
+final_y_test = np.load(f'{data_dir}/brain_test_label.npy')
+
+final_X_train_modified = final_X_train[:, 1, :, :]
+final_X_test_modified = final_X_test[:, 1, :, :]
+
+
+# Add custom dataset code (assuming final_X_train_modified, final_y_train, etc. are pre-loaded):
+# Create a custom dataset class in a separate file (e.g., dataset_custom.py) or inline:
+class CustomBrainDataset(Dataset):
+    def __init__(self, images, labels, transform=None):
+        self.images = images
+        self.labels = labels
+        self.transform = transform
+
+    def __len__(self):
+        return len(self.labels)
+
+    def __getitem__(self, idx):
+        img = self.images[idx]  # shape: (100, 76)
+        img = np.expand_dims(img, axis=0) # shape: (1, 100, 76)
+        img = torch.tensor(img, dtype=torch.float32)
+        label = torch.tensor(self.labels[idx], dtype=torch.long)
+        if self.transform:
+            # If transform expects PIL images, convert img to PIL then back
+            # or use transforms directly on tensors if compatible.
+            # For simplicity, assume transforms handle tensors:
+            img = self.transform(img)
+        return img, label
 
 def parse_option():
     parser = argparse.ArgumentParser('argument for training')
@@ -105,26 +143,31 @@ def parse_option():
     if not os.path.isdir(opt.save_folder):
         os.makedirs(opt.save_folder)
 
-    if opt.dataset == 'cifar10':
-        opt.n_cls = 10
-    elif opt.dataset == 'cifar100':
-        opt.n_cls = 100
-    else:
-        raise ValueError('dataset not supported: {}'.format(opt.dataset))
+    # if opt.dataset == 'cifar10':
+    #     opt.n_cls = 10
+    # elif opt.dataset == 'cifar100':
+    #     opt.n_cls = 100
+    # else:
+    #     raise ValueError('dataset not supported: {}'.format(opt.dataset))
+    # Update classes to 3 since we have AD, CN, MCI:
+    opt.n_cls = 3
 
     return opt
 
 
 def set_loader(opt):
     # construct data loader
-    if opt.dataset == 'cifar10':
-        mean = (0.4914, 0.4822, 0.4465)
-        std = (0.2023, 0.1994, 0.2010)
-    elif opt.dataset == 'cifar100':
-        mean = (0.5071, 0.4867, 0.4408)
-        std = (0.2675, 0.2565, 0.2761)
-    else:
-        raise ValueError('dataset not supported: {}'.format(opt.dataset))
+    # if opt.dataset == 'cifar10':
+    #     mean = (0.4914, 0.4822, 0.4465)
+    #     std = (0.2023, 0.1994, 0.2010)
+    # elif opt.dataset == 'cifar100':
+    #     mean = (0.5071, 0.4867, 0.4408)
+    #     std = (0.2675, 0.2565, 0.2761)
+    # else:
+    #     raise ValueError('dataset not supported: {}'.format(opt.dataset))
+
+    mean = (0.00143,)
+    std = (0.00149,)
     normalize = transforms.Normalize(mean=mean, std=std)
 
     train_transform = transforms.Compose([
@@ -139,22 +182,25 @@ def set_loader(opt):
         normalize,
     ])
 
-    if opt.dataset == 'cifar10':
-        train_dataset = datasets.CIFAR10(root=opt.data_folder,
-                                         transform=train_transform,
-                                         download=True)
-        val_dataset = datasets.CIFAR10(root=opt.data_folder,
-                                       train=False,
-                                       transform=val_transform)
-    elif opt.dataset == 'cifar100':
-        train_dataset = datasets.CIFAR100(root=opt.data_folder,
-                                          transform=train_transform,
-                                          download=True)
-        val_dataset = datasets.CIFAR100(root=opt.data_folder,
-                                        train=False,
-                                        transform=val_transform)
-    else:
-        raise ValueError(opt.dataset)
+    # if opt.dataset == 'cifar10':
+    #     train_dataset = datasets.CIFAR10(root=opt.data_folder,
+    #                                      transform=train_transform,
+    #                                      download=True)
+    #     val_dataset = datasets.CIFAR10(root=opt.data_folder,
+    #                                    train=False,
+    #                                    transform=val_transform)
+    # elif opt.dataset == 'cifar100':
+    #     train_dataset = datasets.CIFAR100(root=opt.data_folder,
+    #                                       transform=train_transform,
+    #                                       download=True)
+    #     val_dataset = datasets.CIFAR100(root=opt.data_folder,
+    #                                     train=False,
+    #                                     transform=val_transform)
+    # else:
+    #     raise ValueError(opt.dataset)
+    train_dataset = CustomBrainDataset(final_X_train_modified, final_y_train, transform=transform)
+    val_dataset = CustomBrainDataset(final_X_test_modified, final_y_test, transform=transform)
+
 
     train_sampler = None
     train_loader = torch.utils.data.DataLoader(

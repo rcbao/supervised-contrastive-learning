@@ -16,13 +16,20 @@ from util import adjust_learning_rate, warmup_learning_rate
 from util import set_optimizer, save_model
 from networks.resnet_big import SupConResNet
 from losses import SupConLoss
-
+import numpy as np
+from main_ce import CustomBrainDataset
 try:
     import apex
     from apex import amp, optimizers
 except ImportError:
     pass
 
+data_dir = "Classification_AD_CN_MCI_datasets"
+
+final_X_train = np.load(f'{data_dir}/brain_train_image_final.npy')
+final_y_train = np.load(f'{data_dir}/brain_train_label.npy')
+
+final_X_train_modified = final_X_train[:, 1, :, :]
 
 def parse_option():
     parser = argparse.ArgumentParser('argument for training')
@@ -81,9 +88,10 @@ def parse_option():
 
     # check if dataset is path that passed required arguments
     if opt.dataset == 'path':
-        assert opt.data_folder is not None \
-            and opt.mean is not None \
-            and opt.std is not None
+        print()
+        # assert opt.data_folder is not None \
+        #     and opt.mean is not None \
+        #     and opt.std is not None
 
     # set the path according to the environment
     if opt.data_folder is None:
@@ -125,22 +133,27 @@ def parse_option():
     if not os.path.isdir(opt.save_folder):
         os.makedirs(opt.save_folder)
 
+    opt.n_cls = 3
+    
     return opt
 
 
 def set_loader(opt):
     # construct data loader
-    if opt.dataset == 'cifar10':
-        mean = (0.4914, 0.4822, 0.4465)
-        std = (0.2023, 0.1994, 0.2010)
-    elif opt.dataset == 'cifar100':
-        mean = (0.5071, 0.4867, 0.4408)
-        std = (0.2675, 0.2565, 0.2761)
-    elif opt.dataset == 'path':
-        mean = eval(opt.mean)
-        std = eval(opt.std)
-    else:
-        raise ValueError('dataset not supported: {}'.format(opt.dataset))
+    # if opt.dataset == 'cifar10':
+    #     mean = (0.4914, 0.4822, 0.4465)
+    #     std = (0.2023, 0.1994, 0.2010)
+    # elif opt.dataset == 'cifar100':
+    #     mean = (0.5071, 0.4867, 0.4408)
+    #     std = (0.2675, 0.2565, 0.2761)
+    # elif opt.dataset == 'path':
+    #     mean = eval(opt.mean)
+    #     std = eval(opt.std)
+    # else:
+    #     raise ValueError('dataset not supported: {}'.format(opt.dataset))
+
+    mean = (0.00143,)
+    std = (0.00149,)
     normalize = transforms.Normalize(mean=mean, std=std)
 
     train_transform = transforms.Compose([
@@ -154,19 +167,30 @@ def set_loader(opt):
         normalize,
     ])
 
-    if opt.dataset == 'cifar10':
-        train_dataset = datasets.CIFAR10(root=opt.data_folder,
-                                         transform=TwoCropTransform(train_transform),
-                                         download=True)
-    elif opt.dataset == 'cifar100':
-        train_dataset = datasets.CIFAR100(root=opt.data_folder,
-                                          transform=TwoCropTransform(train_transform),
-                                          download=True)
-    elif opt.dataset == 'path':
-        train_dataset = datasets.ImageFolder(root=opt.data_folder,
-                                            transform=TwoCropTransform(train_transform))
-    else:
-        raise ValueError(opt.dataset)
+    # if opt.dataset == 'cifar10':
+    #     train_dataset = datasets.CIFAR10(root=opt.data_folder,
+    #                                      transform=TwoCropTransform(train_transform),
+    #                                      download=True)
+    # elif opt.dataset == 'cifar100':
+    #     train_dataset = datasets.CIFAR100(root=opt.data_folder,
+    #                                       transform=TwoCropTransform(train_transform),
+    #                                       download=True)
+    # elif opt.dataset == 'path':
+    #     train_dataset = datasets.ImageFolder(root=opt.data_folder,
+    #                                         transform=TwoCropTransform(train_transform))
+    # else:
+    #     raise ValueError(opt.dataset)
+
+    transform = transforms.Compose([
+        # Adjust or simplify augmentations if needed
+        # transforms.RandomResizedCrop((80, 60)),
+        # transforms.RandomHorizontalFlip(),
+        # transforms.RandomRotation(15),
+        # transforms.ToTensor(),
+        transforms.Normalize(mean=[0.00143], std=[0.00149]),
+    ])
+
+    train_dataset = CustomBrainDataset(final_X_train_modified, final_y_train, transform=TwoCropTransform(transform))
 
     train_sampler = None
     train_loader = torch.utils.data.DataLoader(
@@ -285,6 +309,8 @@ def main():
             save_file = os.path.join(
                 opt.save_folder, 'ckpt_epoch_{epoch}.pth'.format(epoch=epoch))
             save_model(model, optimizer, opt, epoch, save_file)
+
+        print(f"Loss value: {loss} -- Epoch: {epoch} -- Learning Rate: {optimizer.param_groups[0]['lr']}")
 
     # save the last model
     save_file = os.path.join(

@@ -133,3 +133,4 @@ dmypy.json
 save/
 Classification_AD_CN_MCI_datasets/
 *.png
+000*/*
