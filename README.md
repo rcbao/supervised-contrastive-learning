@@ -1,146 +1,66 @@
-# SupContrast: Supervised Contrastive Learning
-<p align="center">
-  <img src="figures/teaser.png" width="700">
-</p>
+# Supervised Contrastive Learning for Brain MRI Classification
 
-This repo covers an reference implementation for the following papers in PyTorch, using CIFAR as an illustrative example:  
-(1) Supervised Contrastive Learning. [Paper](https://arxiv.org/abs/2004.11362)  
-(2) A Simple Framework for Contrastive Learning of Visual Representations. [Paper](https://arxiv.org/abs/2002.05709)  
+This repository implements **Supervised Contrastive Learning** for the classification of brain MRI images into three categories: **Healthy**, **Mild Cognitive Impairment (MCI)**, and **Alzheimer's Disease (AD)**. The project is based on the original Supervised Contrastive Learning framework and has been adapted for use with a medical imaging dataset.
 
-## Update
+## Overview
 
-${\color{red}Note}$: if you found it not easy to parse the supcon loss implementation in this repo, we got you. Supcon loss essentially is just a cross-entropy loss (see eq 4 in the [StableRep](https://arxiv.org/pdf/2306.00984.pdf) paper). So we got a cleaner and simpler implementation [here](https://github.com/google-research/syn-rep-learn/blob/main/StableRep/models/losses.py#L49). Hope it helps.
+- **Dataset**: Brain MRI images (grayscale, 100x76 resolution) categorized into three classes.
+- **Objective**: Evaluate the performance of supervised contrastive learning for medical imaging classification.
+- **Techniques Used**:
+  - Data normalization with dataset-specific mean and standard deviation.
+  - Handling class imbalance using a weighted sampler.
+  - Experiments with data augmentation and hyperparameter tuning.
 
-ImageNet model (small batch size with the trick of the momentum encoder) is released [here](https://www.dropbox.com/s/l4a69ececk4spdt/supcon.pth?dl=0). It achieved > 79% top-1 accuracy.
+## Key Results
 
-## Loss Function
-The loss function [`SupConLoss`](https://github.com/HobbitLong/SupContrast/blob/master/losses.py#L11) in `losses.py` takes `features` (L2 normalized) and `labels` as input, and return the loss. If `labels` is `None` or not passed to the it, it degenerates to SimCLR.
+- Models trained on non-augmented data achieved high accuracy (~91%).
+- Augmented data did not significantly improve performance and requires further investigation.
+- Small batch sizes and medium-to-low learning rates yielded the best results.
 
-Usage:
-```python
-from losses import SupConLoss
+## Repository Contents
 
-# define loss with a temperature `temp`
-criterion = SupConLoss(temperature=temp)
+- `main_supcon.py`: Implementation of supervised contrastive learning.
+- `networks/resnet_big.py`: ResNet-based backbone for feature extraction.
+- `data_loader.py`: Dataset processing pipeline for grayscale MRI images.
+- `eval.py`: Evaluation script for generating confusion matrices, classification reports, and loss graphs.
 
-# features: [bsz, n_views, f_dim]
-# `n_views` is the number of crops from each image
-# better be L2 normalized in f_dim dimension
-features = ...
-# labels: [bsz]
-labels = ...
+## Setup
 
-# SupContrast
-loss = criterion(features, labels)
-# or SimCLR
-loss = criterion(features)
-...
-```
+1. **Clone the Repository**:
+   ```bash
+   git clone https://github.com/rcbao/cs-6501-mlia-supcon.git
+   cd cs-6501-mlia-supcon
+   ```
 
-## Comparison
-Results on CIFAR-10:
-|          |Arch | Setting | Loss | Accuracy(%) |
-|----------|:----:|:---:|:---:|:---:|
-|  SupCrossEntropy | ResNet50 | Supervised   | Cross Entropy |  95.0  |
-|  SupContrast     | ResNet50 | Supervised   | Contrastive   |  96.0  | 
-|  SimCLR          | ResNet50 | Unsupervised | Contrastive   |  93.6  |
+2. **Install Dependencies**:
+   Ensure Python 3.7+ and PyTorch are installed. Use the provided `requirements.txt` file:
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-Results on CIFAR-100:
-|          |Arch | Setting | Loss | Accuracy(%) |
-|----------|:----:|:---:|:---:|:---:|
-|  SupCrossEntropy | ResNet50 | Supervised   | Cross Entropy |  75.3 |
-|  SupContrast     | ResNet50 | Supervised   | Contrastive   |  76.5 | 
-|  SimCLR          | ResNet50 | Unsupervised | Contrastive   |  70.7 |
+3. **Dataset**:
+   Place the brain MRI dataset in the `Classification_AD_CN_MCI_datasets/` directory. Ensure it contains the following files:
+   - `brain_train_image_final.npy`
+   - `brain_train_label.npy`
+   - `brain_test_image_final.npy`
+   - `brain_test_label.npy`
 
-Results on ImageNet (Stay tuned):
-|          |Arch | Setting | Loss | Accuracy(%) |
-|----------|:----:|:---:|:---:|:---:|
-|  SupCrossEntropy | ResNet50 | Supervised   | Cross Entropy |  -  |
-|  SupContrast     | ResNet50 | Supervised   | Contrastive   |  79.1 (MoCo trick)  | 
-|  SimCLR          | ResNet50 | Unsupervised | Contrastive   |  -  |
+## Training and Evaluation
 
-## Running
-You might use `CUDA_VISIBLE_DEVICES` to set proper number of GPUs, and/or switch to CIFAR100 by `--dataset cifar100`.  
-**(1) Standard Cross-Entropy**
-```
-python main_ce.py --batch_size 1024 \
-  --learning_rate 0.8 \
-  --cosine --syncBN \
-```
-**(2) Supervised Contrastive Learning**  
-Pretraining stage:
-```
-python main_supcon.py --batch_size 1024 \
-  --learning_rate 0.5 \
-  --temp 0.1 \
-  --cosine
-```
+1. **Run Training**:
+   Train the model with default parameters:
+   ```bash
+   python main_supcon.py --batch_size 32 --epochs 150 --learning_rate 0.05 --temp 0.1 --cosine
+   ```
 
-<s>You can also specify `--syncBN` but I found it not crucial for SupContrast (`syncBN` 95.9% v.s. `BN` 96.0%). </s>
+2. **Evaluate Results**:
+   Generate metrics, loss curves, and confusion matrices:
+   ```bash
+   python eval.py
+   ```
 
-WARN: Currently, `--syncBN` has no effect since the code is using `DataParallel` instead of `DistributedDataParaleel`
+## Future Work
 
-Linear evaluation stage:
-```
-python main_linear.py --batch_size 512 \
-  --learning_rate 5 \
-  --ckpt /path/to/model.pth
-```
-**(3) SimCLR**  
-Pretraining stage:
-```
-python main_supcon.py --batch_size 1024 \
-  --learning_rate 0.5 \
-  --temp 0.5 \
-  --cosine --syncBN \
-  --method SimCLR
-```
-The `--method SimCLR` flag simply stops `labels` from being passed to `SupConLoss` criterion.
-Linear evaluation stage:
-```
-python main_linear.py --batch_size 512 \
-  --learning_rate 1 \
-  --ckpt /path/to/model.pth
-```
-
-On custom dataset:
-```
-python main_supcon.py --batch_size 1024 \
-  --learning_rate 0.5  \ 
-  --temp 0.1 --cosine \
-  --dataset path \
-  --data_folder ./path \
-  --mean "(0.4914, 0.4822, 0.4465)" \
-  --std "(0.2675, 0.2565, 0.2761)" \
-  --method SimCLR
-```
-
-The `--data_folder` must be of form ./path/label/xxx.png folowing https://pytorch.org/docs/stable/torchvision/datasets.html#torchvision.datasets.ImageFolder convension.
-
-and 
-## t-SNE Visualization
-
-**(1) Standard Cross-Entropy**
-<p align="center">
-  <img src="figures/SupCE.jpg" width="400">
-</p>
-
-**(2) Supervised Contrastive Learning**
-<p align="center">
-  <img src="figures/SupContrast.jpg" width="800">
-</p>
-
-**(3) SimCLR**
-<p align="center">
-  <img src="figures/SimCLR.jpg" width="800">
-</p>
-
-## Reference
-```
-@Article{khosla2020supervised,
-    title   = {Supervised Contrastive Learning},
-    author  = {Prannay Khosla and Piotr Teterwak and Chen Wang and Aaron Sarna and Yonglong Tian and Phillip Isola and Aaron Maschinot and Ce Liu and Dilip Krishnan},
-    journal = {arXiv preprint arXiv:2004.11362},
-    year    = {2020},
-}
-```
+- Investigate more effective data augmentation techniques for medical imaging.
+- Explore longer training runs with increased epochs for improved results.
+- Optimize hyperparameter tuning for further performance gains.
