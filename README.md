@@ -45,19 +45,14 @@ This repository implements **Supervised Contrastive Learning** for the classific
    - `brain_test_image_final.npy`
    - `brain_test_label.npy`
 
-## Training and Evaluation
+## How to run the code
 
-1. **Run Training**:
-   Train the model with default parameters:
-   ```bash
-   python main_supcon.py --batch_size 32 --epochs 150 --learning_rate 0.05 --temp 0.1 --cosine
-   ```
-
-2. **Evaluate Results**:
-   Generate metrics, loss curves, and confusion matrices:
+   To train the model and generate metrics, loss curves, and confusion matrices for a combination of parameters:
    ```bash
    python eval.py
    ```
+
+  The entire training run will take two to three hours to complete.
 
 ## Future Work
 
