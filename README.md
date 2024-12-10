@@ -1,6 +1,6 @@
 # Supervised Contrastive Learning for Brain MRI Classification
 
-This repository implements **Supervised Contrastive Learning** for the classification of brain MRI images into three categories: **Healthy**, **Mild Cognitive Impairment (MCI)**, and **Alzheimer's Disease (AD)**. The project is based on the original Supervised Contrastive Learning framework and has been adapted for use with a medical imaging dataset.
+This repository implements **Supervised Contrastive Learning** for the classification of brain MRI images into three categories: **Healthy**, **Mild Cognitive Impairment (MCI)**, and **Alzheimer's Disease (AD)**. The project is based on the original Supervised Contrastive Learning framework (Khosla et al. (2021)) and has been adapted for use with a medical imaging dataset.
 
 ## Overview
 
