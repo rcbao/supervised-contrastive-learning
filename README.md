@@ -45,14 +45,26 @@ This repository implements **Supervised Contrastive Learning** for the classific
    - `brain_test_image_final.npy`
    - `brain_test_label.npy`
 
-## How to run the code
+## How to Run the Code
 
-   To train the model and generate metrics, loss curves, and confusion matrices for a combination of parameters:
+To train the model and generate metrics, loss curves, and confusion matrices for different parameter combinations, run:
+
+```bash
+python eval_v1.py
+```
+
+The complete training process, including evaluation, will take approximately 2–3 hours, depending on the hardware configuration.
+
+## Pre-trained Model
+
+The best-performing pre-trained model, achieved with a batch size of 32, learning rate of 0.01, and no data augmentation, is provided as `batchsize-32-lr-0.01-transform-base.pth.zip`.
+
+To use the model:
+1. Unzip the file:
    ```bash
-   python eval_v1.py
+   unzip batchsize-32-lr-0.01-transform-base.pth.zip
    ```
-
-  The entire training run will take two to three hours to complete.
+2. Load the model for evaluation or inference as needed.
 
 ## Future Work
 
