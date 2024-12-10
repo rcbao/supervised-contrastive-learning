@@ -49,7 +49,7 @@ This repository implements **Supervised Contrastive Learning** for the classific
 
    To train the model and generate metrics, loss curves, and confusion matrices for a combination of parameters:
    ```bash
-   python eval.py
+   python eval_v1.py
    ```
 
   The entire training run will take two to three hours to complete.
