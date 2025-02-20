@@ -1,4 +1,4 @@
-# Supervised Contrastive Learning for Brain MRI Classification
+# Using Supervised Contrastive Learning to Classify Brain MRI Images
 
 <p align="center">
   <img src="https://github.com/user-attachments/assets/ccfb2bc3-cdfb-415f-883e-9a544c4e2acc" width="48%" />
