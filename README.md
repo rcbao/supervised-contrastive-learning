@@ -1,6 +1,15 @@
 # Supervised Contrastive Learning for Brain MRI Classification
 
-This repository implements **Supervised Contrastive Learning** for the classification of brain MRI images into three categories: **Healthy**, **Mild Cognitive Impairment (MCI)**, and **Alzheimer's Disease (AD)**. The project is based on the original Supervised Contrastive Learning framework (Khosla et al. (2021)) and has been adapted for use with a medical imaging dataset.
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/ccfb2bc3-cdfb-415f-883e-9a544c4e2acc" width="48%" />
+  <img src="https://github.com/user-attachments/assets/4b8459e4-fc9f-4a5b-88de-03316351c76e" width="48%" />
+</p>
+
+This project applys **Supervised Contrastive Learning** to classify brain MRI images into three categories: **Healthy**, **Mild Cognitive Impairment (MCI)**, and **Alzheimer's Disease (AD)**. 
+
+The project is based on the Supervised Contrastive Learning framework proposed by [Khosla et al.](https://arxiv.org/pdf/2004.11362). The code has been adapted for pre-training and inference on the brain MRI dataset.
+
+Read our [full project report](REPORT.pdf) for more details.
 
 ## Overview
 
@@ -11,11 +20,13 @@ This repository implements **Supervised Contrastive Learning** for the classific
   - Handling class imbalance using a weighted sampler.
   - Experiments with data augmentation and hyperparameter tuning.
 
-## Key Results
+## Selected Results
 
 - Models trained on non-augmented data achieved high accuracy (~91%).
 - Augmented data did not significantly improve performance and requires further investigation.
 - Small batch sizes and medium-to-low learning rates yielded the best results.
+
+
 
 ## Repository Contents
 
